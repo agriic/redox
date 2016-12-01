@@ -387,13 +387,13 @@ private:
 
 // Commands use this method to deregister themselves from Redox,
 // give it access to private members
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunsupported-friend"
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wunsupported-friend"
   template <class ReplyT> friend void Command<ReplyT>::free();
 
   // Access to call disconnectedCallback
   template <class ReplyT> friend void Command<ReplyT>::processReply(redisReply *r);
-#pragma GCC diagnostic pop
+// #pragma GCC diagnostic pop
 };
 
 // ------------------------------------------------
