@@ -74,6 +74,14 @@ public:
   void wait();
 
   /**
+  * Send auth message to server.
+  * Call this before any subscribe happens
+  */
+  bool auth(const std::string &password) {
+    return rdx_.commandSync({"AUTH", password});
+  }
+
+  /**
   * Subscribe to a topic.
   *
   * msg_callback: invoked whenever a message is received.

@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#undef EV_ERROR
 #include <hiredis/adapters/libev.h>
 #include <hiredis/async.h>
 #include <hiredis/hiredis.h>
