@@ -89,11 +89,11 @@ void debugReply(Command<redisReply *> c) {
   cout << "------" << endl;
 }
 
-void Subscriber::subscribeBase(const string cmd_name, const string topic,
-                               function<void(const string &, const string &)> msg_callback,
-                               function<void(const string &)> sub_callback,
-                               function<void(const string &)> unsub_callback,
-                               function<void(const string &, int)> err_callback) {
+void Subscriber::subscribeBase(const string& cmd_name, const string& topic,
+                               const function<void(const string &, const string &)>& msg_callback,
+                               const function<void(const string &)>& sub_callback,
+                               const function<void(const string &)>& unsub_callback,
+                               const function<void(const string &, int)>& err_callback) {
 
   Command<redisReply *> &sub_cmd =
       rdx_.commandLoop<redisReply *>({cmd_name, topic},
@@ -170,11 +170,11 @@ void Subscriber::subscribeBase(const string cmd_name, const string topic,
   num_pending_subs_++;
 }
 
-void Subscriber::subscribe(const string topic,
-                           function<void(const string &, const string &)> msg_callback,
-                           function<void(const string &)> sub_callback,
-                           function<void(const string &)> unsub_callback,
-                           function<void(const string &, int)> err_callback) {
+void Subscriber::subscribe(const string& topic,
+                           const function<void(const string &, const string &)>& msg_callback,
+                           const function<void(const string &)>& sub_callback,
+                           const function<void(const string &)>& unsub_callback,
+                           const function<void(const string &, int)>& err_callback) {
   lock_guard<mutex> lg(subscribed_topics_guard_);
   if (subscribed_topics_.find(topic) != subscribed_topics_.end()) {
     return;
@@ -182,11 +182,11 @@ void Subscriber::subscribe(const string topic,
   subscribeBase("SUBSCRIBE", topic, msg_callback, sub_callback, unsub_callback, err_callback);
 }
 
-void Subscriber::psubscribe(const string topic,
-                            function<void(const string &, const string &)> msg_callback,
-                            function<void(const string &)> sub_callback,
-                            function<void(const string &)> unsub_callback,
-                            function<void(const string &, int)> err_callback) {
+void Subscriber::psubscribe(const string& topic,
+                            const function<void(const string &, const string &)>& msg_callback,
+                            const function<void(const string &)>& sub_callback,
+                            const function<void(const string &)>& unsub_callback,
+                            const function<void(const string &, int)>& err_callback) {
   lock_guard<mutex> lg(psubscribed_topics_guard_);
   if (psubscribed_topics_.find(topic) != psubscribed_topics_.end()) {
     return;
@@ -194,8 +194,8 @@ void Subscriber::psubscribe(const string topic,
   subscribeBase("PSUBSCRIBE", topic, msg_callback, sub_callback, unsub_callback, err_callback);
 }
 
-void Subscriber::unsubscribeBase(const string cmd_name, const string topic,
-                                 function<void(const string &, int)> err_callback) {
+void Subscriber::unsubscribeBase(const string& cmd_name, const string& topic,
+                                 const function<void(const string &, int)>& err_callback) {
   rdx_.command<redisReply *>({cmd_name, topic}, [topic, err_callback](Command<redisReply *> &c) {
     if (!c.ok()) {
       if (err_callback)
@@ -205,7 +205,7 @@ void Subscriber::unsubscribeBase(const string cmd_name, const string topic,
   });
 }
 
-void Subscriber::unsubscribe(const string topic, function<void(const string &, int)> err_callback) {
+void Subscriber::unsubscribe(const string& topic, const function<void(const string &, int)>& err_callback) {
   lock_guard<mutex> lg(subscribed_topics_guard_);
   if (subscribed_topics_.find(topic) == subscribed_topics_.end()) {
     return;
@@ -213,8 +213,8 @@ void Subscriber::unsubscribe(const string topic, function<void(const string &, i
   unsubscribeBase("UNSUBSCRIBE", topic, err_callback);
 }
 
-void Subscriber::punsubscribe(const string topic,
-                              function<void(const string &, int)> err_callback) {
+void Subscriber::punsubscribe(const string& topic,
+                              const function<void(const string &, int)>& err_callback) {
   lock_guard<mutex> lg(psubscribed_topics_guard_);
   if (psubscribed_topics_.find(topic) == psubscribed_topics_.end()) {
     return;

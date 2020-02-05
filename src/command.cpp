@@ -20,14 +20,46 @@
 
 // #include <iostream>
 #include <set>
+#include <map>
 #include <sstream>
 #include <unordered_set>
 #include <vector>
+#include <utility>
 
 #include "client.hpp"
 #include "command.hpp"
 
 using namespace std;
+
+namespace {
+
+// Helper function to process replies that should convert into a map
+void parseReplyObject(redisReply* reply_obj, map<string,string>& reply_val) {
+
+    if (reply_obj->type != REDIS_REPLY_ARRAY) {
+      return;
+    }
+
+    for (size_t i = 0; i < reply_obj->elements; i = i + 2) {
+      redisReply *r = *(reply_obj->element + i);
+      size_t next = i + 1;
+      if (next < reply_obj->elements) {
+        redisReply *rnext = *(reply_obj->element + next);
+        reply_val.emplace(
+          std::piecewise_construct,
+          std::forward_as_tuple(r->str, r->len),
+          std::forward_as_tuple(rnext->str, rnext->len));
+      } else {
+        reply_val.emplace(
+          std::piecewise_construct,
+          std::forward_as_tuple(r->str, r->len),
+          std::forward_as_tuple());
+      }
+    }
+}
+
+}
+
 
 namespace redox {
 
@@ -46,14 +78,19 @@ template <class ReplyT> void Command<ReplyT>::wait() {
   waiting_done_ = {false};
 }
 
-template <class ReplyT> void Command<ReplyT>::processReply(redisReply *r) {
+template <class ReplyT> void Command<ReplyT>::processReply(redisReply *r, const std::string& errorMessage) {
 
   last_error_.clear();
   reply_obj_ = r;
 
   if (reply_obj_ == nullptr) {
     reply_status_ = ERROR_REPLY;
-    last_error_ = "Received null redisReply* from hiredis.";
+    if (errorMessage.empty()) {
+        last_error_ = "Received null redisReply* from hiredis.";
+    }
+    else {
+        last_error_ = errorMessage;
+    }
     Redox::disconnectedCallback(rdx_->ctx_, REDIS_ERR);
 
   } else {
@@ -230,6 +267,27 @@ template <> void Command<vector<string>>::parseReplyObject() {
   }
 }
 
+template <> void Command<map<string,string>>::parseReplyObject() {
+
+  if (!isExpectedReply(REDIS_REPLY_ARRAY))
+    return;
+
+  ::parseReplyObject(reply_obj_, reply_val_);
+}
+
+template <> void Command<vector<map<string,string>>>::parseReplyObject() {
+
+  if (!isExpectedReply(REDIS_REPLY_ARRAY))
+    return;
+
+  for (size_t i = 0; i < reply_obj_->elements; i++) {
+      redisReply *r = *(reply_obj_->element + i);
+      map<string,string> reply_val;
+      ::parseReplyObject(r, reply_val);
+      reply_val_.push_back(reply_val);
+  }
+}
+
 template <> void Command<unordered_set<string>>::parseReplyObject() {
 
   if (!isExpectedReply(REDIS_REPLY_ARRAY))
@@ -263,6 +321,8 @@ template class Command<long long int>;
 template class Command<nullptr_t>;
 template class Command<vector<string>>;
 template class Command<set<string>>;
+template class Command<map<string,string>>;
+template class Command<vector<map<string,string>>>;
 template class Command<unordered_set<string>>;
 
 } // End namespace redox

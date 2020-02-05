@@ -45,8 +45,9 @@ public:
   /**
   * Same as .connect() on a Redox instance.
   */
-  bool connect(const std::string &host = REDIS_DEFAULT_HOST, const int port = REDIS_DEFAULT_PORT,
-               std::function<void(int)> connection_callback = nullptr) {
+  bool connect(const std::string &host = REDIS_DEFAULT_HOST, 
+               const int port = REDIS_DEFAULT_PORT,
+               const std::function<void(int)>& connection_callback = nullptr) {
     return rdx_.connect(host, port, connection_callback);
   }
 
@@ -54,7 +55,7 @@ public:
   * Same as .connectUnix() on a Redox instance.
   */
   bool connectUnix(const std::string &path = REDIS_DEFAULT_PATH,
-                   std::function<void(int)> connection_callback = nullptr) {
+                   const std::function<void(int)>& connection_callback = nullptr) {
     return rdx_.connectUnix(path, connection_callback);
   }
 
@@ -88,11 +89,11 @@ public:
   * sub_callback: invoked when successfully subscribed
   * err_callback: invoked on some error state
   */
-  void subscribe(const std::string topic,
-                 std::function<void(const std::string &, const std::string &)> msg_callback,
-                 std::function<void(const std::string &)> sub_callback = nullptr,
-                 std::function<void(const std::string &)> unsub_callback = nullptr,
-                 std::function<void(const std::string &, int)> err_callback = nullptr);
+  void subscribe(const std::string& topic,
+                 const std::function<void(const std::string &, const std::string &)>& msg_callback,
+                 const std::function<void(const std::string &)>& sub_callback = nullptr,
+                 const std::function<void(const std::string &)>& unsub_callback = nullptr,
+                 const std::function<void(const std::string &, int)>& err_callback = nullptr);
 
   /**
   * Subscribe to a topic with a pattern.
@@ -101,27 +102,27 @@ public:
   * sub_callback: invoked when successfully subscribed
   * err_callback: invoked on some error state
   */
-  void psubscribe(const std::string topic,
-                  std::function<void(const std::string &, const std::string &)> msg_callback,
-                  std::function<void(const std::string &)> sub_callback = nullptr,
-                  std::function<void(const std::string &)> unsub_callback = nullptr,
-                  std::function<void(const std::string &, int)> err_callback = nullptr);
+  void psubscribe(const std::string& topic,
+                  const std::function<void(const std::string &, const std::string &)>& msg_callback,
+                  const std::function<void(const std::string &)>& sub_callback = nullptr,
+                  const std::function<void(const std::string &)>& unsub_callback = nullptr,
+                  const std::function<void(const std::string &, int)>& err_callback = nullptr);
 
   /**
   * Unsubscribe from a topic.
   *
   * err_callback: invoked on some error state
   */
-  void unsubscribe(const std::string topic,
-                   std::function<void(const std::string &, int)> err_callback = nullptr);
+  void unsubscribe(const std::string& topic,
+                   const std::function<void(const std::string &, int)>& err_callback = nullptr);
 
   /**
   * Unsubscribe from a topic with a pattern.
   *
   * err_callback: invoked on some error state
   */
-  void punsubscribe(const std::string topic,
-                    std::function<void(const std::string &, int)> err_callback = nullptr);
+  void punsubscribe(const std::string& topic,
+                    const std::function<void(const std::string &, int)>& err_callback = nullptr);
 
   /**
   * Return the topics that are subscribed() to.
@@ -141,15 +142,15 @@ public:
 
 private:
   // Base for subscribe and psubscribe
-  void subscribeBase(const std::string cmd_name, const std::string topic,
-                     std::function<void(const std::string &, const std::string &)> msg_callback,
-                     std::function<void(const std::string &)> sub_callback = nullptr,
-                     std::function<void(const std::string &)> unsub_callback = nullptr,
-                     std::function<void(const std::string &, int)> err_callback = nullptr);
+  void subscribeBase(const std::string& cmd_name, const std::string& topic,
+                     const std::function<void(const std::string &, const std::string &)>& msg_callback,
+                     const std::function<void(const std::string &)>& sub_callback = nullptr,
+                     const std::function<void(const std::string &)>& unsub_callback = nullptr,
+                     const std::function<void(const std::string &, int)>& err_callback = nullptr);
 
   // Base for unsubscribe and punsubscribe
-  void unsubscribeBase(const std::string cmd_name, const std::string topic,
-                       std::function<void(const std::string &, int)> err_callback = nullptr);
+  void unsubscribeBase(const std::string& cmd_name, const std::string& topic,
+                       const std::function<void(const std::string &, int)>& err_callback = nullptr);
 
   // Underlying Redis client
   Redox rdx_;
